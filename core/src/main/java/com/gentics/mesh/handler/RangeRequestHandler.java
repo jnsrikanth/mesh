@@ -10,35 +10,9 @@ public interface RangeRequestHandler {
 	boolean DEFAULT_SEND_VARY_HEADER = true;
 
 	/**
-	 * Default of whether async filesystem access should always be used
-	 */
-	boolean DEFAULT_ALWAYS_ASYNC_FS = false;
-
-	/**
-	 * Default of whether cache header handling is enabled
-	 */
-	boolean DEFAULT_CACHING_ENABLED = true;
-
-	/**
-	 * Default of whether fs async/sync tuning should be used
-	 */
-	boolean DEFAULT_ENABLE_FS_TUNING = true;
-
-	/**
 	 * The default max cache size
 	 */
 	int DEFAULT_MAX_CACHE_SIZE = 10000;
-
-	/**
-	 * Default cache entry timeout, when caching
-	 */
-	long DEFAULT_CACHE_ENTRY_TIMEOUT = 30000; // 30 seconds
-
-	/**
-	 * Default max avg serve time, in ns, over which serving will be considered slow
-	 */
-	long DEFAULT_MAX_AVG_SERVE_TIME_NS = 1000000; // 1ms
-
 	/**
 	 * Default max age for cache headers
 	 */

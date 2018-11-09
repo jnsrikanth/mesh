@@ -92,7 +92,6 @@ public class BinaryFieldResponseHandler {
 		HttpServerResponse response = rc.response();
 
 		Binary binary = binaryField.getBinary();
-		String contentLength = String.valueOf(binary.getSize());
 		String fileName = binaryField.getFileName();
 		String contentType = binaryField.getMimeType();
 		// Try to guess the contenttype via the filename
@@ -113,6 +112,7 @@ public class BinaryFieldResponseHandler {
 			RangeRequestHandler handler = new RangeRequestHandlerImpl();
 			handler.handle(rc, localPath, contentType);
 		} else {
+			String contentLength = String.valueOf(binary.getSize());
 			if (contentType != null) {
 				response.putHeader(HttpHeaders.CONTENT_TYPE, contentType);
 			}
