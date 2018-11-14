@@ -20,7 +20,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
@@ -33,6 +32,9 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 
+import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
+import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -1225,5 +1227,27 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 				new BranchMicroschemaInfo(new MicroschemaReferenceImpl().setName("anothernewschemaname2").setUuid(microschema.getUuid())
 					.setVersion("5.0")));
 		}
+	}
+
+	/**
+	 * Test for https://github.com/gentics/mesh/issues/521
+	 */
+	@Test
+	public void testNodeMigrationToNewBranch() {
+		// Using folder schema
+		// Using initial branch
+		NodeResponse node = createNode("name", new StringFieldImpl().setString("name"));
+		addSchemaField();
+		createBranch("branch1", true);
+		NodeResponse migratedNode = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid()));
+		assertThat(migratedNode).hasSchemaVersion("folder", "2.0");
+	}
+
+	private void addSchemaField() {
+		SchemaResponse folder = getSchemaByName("folder");
+		SchemaUpdateRequest request = folder.toUpdateRequest();
+		request.getFields().add(new StringFieldSchemaImpl().setName("testField"));
+		call(() -> client().updateSchema(folder.getUuid(), request,
+			new SchemaUpdateParametersImpl().setUpdateAssignedBranches(false)));
 	}
 }
