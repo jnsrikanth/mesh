@@ -32,9 +32,12 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 
+import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
+import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
+import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -77,6 +80,7 @@ import com.gentics.mesh.test.util.TestUtils;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.tx.Tx;
 
+//@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true, inMemoryDB = false, startStorageServer = true)
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
 
@@ -1238,9 +1242,19 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		// Using initial branch
 		NodeResponse node = createNode("name", new StringFieldImpl().setString("name"));
 		addSchemaField();
-		createBranch("branch1", true);
+		waitForJobs(() -> {
+			BranchCreateRequest request = new BranchCreateRequest();
+			request.setName("branch1");
+			call(() -> client().createBranch(PROJECT_NAME, request));
+		}, MigrationStatus.COMPLETED, 2);
+		NodeResponse originalNode = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().setBranch(INITIAL_BRANCH_NAME)));
 		NodeResponse migratedNode = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid()));
+
+		assertThat(originalNode).hasSchemaVersion("folder", "1.0");
 		assertThat(migratedNode).hasSchemaVersion("folder", "2.0");
+
+		assertThat(originalNode).hasVersion("0.1");
+		assertThat(migratedNode).hasVersion("0.2");
 	}
 
 	private void addSchemaField() {
@@ -1250,4 +1264,6 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		call(() -> client().updateSchema(folder.getUuid(), request,
 			new SchemaUpdateParametersImpl().setUpdateAssignedBranches(false)));
 	}
+
+
 }
