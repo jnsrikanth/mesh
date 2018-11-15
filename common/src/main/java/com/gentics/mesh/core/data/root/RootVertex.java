@@ -83,7 +83,8 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 		MeshAuthUser user = ac.getUser();
 		FramedTransactionalGraph graph = Tx.getActive().getGraph();
 
-		Spliterator<Edge> itemEdges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_out", getId()).spliterator();
+		String idx = "e." + getRootLabel().toLowerCase() + "_out";
+		Spliterator<Edge> itemEdges = graph.getEdges(idx.toLowerCase(), getId()).spliterator();
 		return StreamSupport.stream(itemEdges, false)
 			.map(edge -> edge.getVertex(Direction.IN))
 			.filter(vertex -> user.hasPermissionForId(vertex.getId(), READ_PERM))

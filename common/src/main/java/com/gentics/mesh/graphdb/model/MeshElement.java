@@ -1,11 +1,12 @@
 package com.gentics.mesh.graphdb.model;
 
+import com.syncleus.ferma.ElementFrame;
 import com.tinkerpop.blueprints.Element;
 
 /**
  * Basic interface for graph elements.
  */
-public interface MeshElement {
+public interface MeshElement extends ElementFrame {
 
 	/**
 	 * Set the uuid of the element.
@@ -36,4 +37,12 @@ public interface MeshElement {
 	 */
 	String getElementVersion();
 
+	/**
+	 * @param <N>
+	 *            The ID's type.
+	 * @return The id of this element.
+	 */
+	default <N> N id() {
+		return getId();
+	}
 }
